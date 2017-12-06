@@ -114,24 +114,3 @@ func Test_range_buildCatchAllPart(t *testing.T) {
 		t.Fatalf("error invalid result:%s", diff)
 	}
 }
-
-func Test_range_reorgnizeCatchAllPart(t *testing.T) {
-	r := &Range{
-		table: "test3",
-		catchAllPartitionName: "pmax",
-	}
-
-	p := Partition{
-		Name:        "p20110101",
-		Description: "TO_DAYS('2011-01-01')",
-	}
-	expect := "ALTER TABLE test3 REORGANIZE PARTITION pmax INTO (PARTITION p20110101 VALUES LESS THAN (TO_DAYS('2011-01-01')), PARTITION pmax VALUES LESS THAN (MAXVALUE))"
-	result, err := r.buildReorganizeCatchAllPart(p)
-	if err != nil {
-		t.Fatal("error build catcch all part.", err.Error())
-	}
-
-	if diff := cmp.Diff(result, expect); diff != "" {
-		t.Fatalf("error invalid result:%s", diff)
-	}
-}

@@ -64,20 +64,3 @@ func (r *Range) buildCatchAllPart() (string, error) {
 
 	return fmt.Sprintf("ALTER TABLE %s ADD PARTITION (%s)", r.table, part), nil
 }
-
-func (r *Range) buildReorganizeCatchAllPart(p Partition) (string, error) {
-	if p.Description == "" {
-		return "", fmt.Errorf("error no partition description is spcified")
-	}
-
-	part, err := r.buildPart(p)
-	if err != nil {
-		return "", err
-	}
-
-	if p.Comment != "" {
-		part = part + fmt.Sprintf(" COMMENT = '%s'", strings.Replace(p.Comment, "'", "", -1))
-	}
-
-	return fmt.Sprintf("ALTER TABLE %s REORGANIZE PARTITION %s INTO (%s, PARTITION %s VALUES LESS THAN (MAXVALUE))", r.table, r.catchAllPartitionName, part, r.catchAllPartitionName), nil
-}
