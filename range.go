@@ -40,7 +40,7 @@ func (r *Range) buildPart(p Partition) (string, error) {
 		return "", fmt.Errorf("error no partition description is spcified")
 	}
 
-	if !numberRegexp.MatchString(p.Description) && p.Description != "MAXVALUE" && !bracketRegexp.MatchString(p.Description) {
+	if !numberRegexp.MatchString(p.Description) && p.Description != CatchAllPartitionValue && !bracketRegexp.MatchString(p.Description) {
 		p.Description = fmt.Sprintf("'%s'", p.Description)
 	}
 

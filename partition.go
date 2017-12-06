@@ -12,6 +12,8 @@ import (
 const (
 	PartitionTypeList  = "LIST"
 	PartitionTypeRange = "RANGE COLUMNS" // TODO Fail Test
+
+	CatchAllPartitionValue = "MAXVALUE"
 )
 
 // Partition is XXX
@@ -106,6 +108,10 @@ func (p *partitioner) buildParts(partitions ...Partition) (string, error) {
 }
 
 func (p *partitioner) buildCreatesSQL(partitions ...Partition) (string, error) {
+	if r, ok := p.partBuilder.(*Range); ok && r.catchAllPartitionName != "" {
+		partitions = append(partitions, Partition{Name: r.catchAllPartitionName, Description: CatchAllPartitionValue})
+	}
+
 	parts, err := p.buildParts(partitions...)
 	if err != nil {
 		return "", errors.Wrap(err, "error build parts")
