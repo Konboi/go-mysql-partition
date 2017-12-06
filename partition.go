@@ -102,7 +102,7 @@ func (p *partitioner) buildParts(partitions ...Partition) (string, error) {
 		parts = append(parts, part)
 	}
 
-	return strings.Join(parts, ","), nil
+	return strings.Join(parts, ", "), nil
 }
 
 func (p *partitioner) buildCreatesSQL(partitions ...Partition) (string, error) {
