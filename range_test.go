@@ -72,7 +72,7 @@ func TestRangePartitioner(t *testing.T) {
 		}
 
 		if diff := cmp.Diff(h.Statement(), expect); diff != "" {
-			t.Fatal("error invalid result. %s", diff)
+			t.Fatalf("error invalid result. %s", diff)
 		}
 	})
 }
