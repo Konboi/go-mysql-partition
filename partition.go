@@ -11,7 +11,7 @@ import (
 
 const (
 	PartitionTypeList  = "LIST"
-	PartitionTypeRange = "Range"
+	PartitionTypeRange = "RANGE COLUMNS" // TODO Fail Test
 )
 
 // Partition is XXX
