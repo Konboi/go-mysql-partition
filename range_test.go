@@ -1,6 +1,7 @@
 package partition
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -14,7 +15,7 @@ func TestRangePartitioner(t *testing.T) {
 		Do     func(...Partition) (Handler, error)
 	}
 
-	r := NewRangePartitioner(nil, "test2", "created_at", "")
+	r := NewRangePartitioner(nil, "test2", "created_at", fmt.Sprintf("%s columns", PartitionTypeRange), "")
 	tests := []Test{
 		Test{
 			Title: "create partition",
@@ -65,7 +66,7 @@ func TestRangePartitioner(t *testing.T) {
 			Description: "TO_DAYS('2010-01-01')",
 		}
 		expect := "ALTER TABLE test3 PARTITION BY RANGE (TO_DAYS(created_at)) (PARTITION p20100101 VALUES LESS THAN (TO_DAYS('2010-01-01')), PARTITION pmax VALUES LESS THAN (MAXVALUE))"
-		r := NewRangePartitioner(nil, "test3", "TO_DAYS(created_at)", "pmax")
+		r := NewRangePartitioner(nil, "test3", "TO_DAYS(created_at)", PartitionTypeRange, "pmax")
 		h, err := r.PrepareCreates(p)
 		if err != nil {
 			t.Fatal("error prepare creates.", err.Error())

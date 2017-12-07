@@ -11,7 +11,7 @@ import (
 
 const (
 	PartitionTypeList  = "LIST"
-	PartitionTypeRange = "RANGE COLUMNS" // TODO Fail Test
+	PartitionTypeRange = "RANGE"
 
 	CatchAllPartitionValue = "MAXVALUE"
 )
