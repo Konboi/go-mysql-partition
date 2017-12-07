@@ -54,16 +54,68 @@ type partitioner struct {
 	db            *sql.DB
 	partitionType string
 	expression    string
+	partBuilder   partBuilder
 
 	dryrun  bool
 	verbose bool
 
-	partitions  []Partition
-	partBuilder partBuilder
+	// lazy load
+	_partitions []string
+	_dbName     string
+}
+
+func (p *partitioner) dbName() (string, error) {
+	if p._dbName != "" {
+		return p._dbName, nil
+	}
+
+	if err := p.db.QueryRow("SELECT DATABASE()").Scan(&p._dbName); err != nil {
+		return "", errors.Wrap(err, "error select database name.")
+	}
+
+	return p._dbName, nil
 }
 
 func (p *partitioner) retrievePartitions() ([]string, error) {
-	return nil, nil
+	dbName, err := p.dbName()
+	if err != nil {
+		return nil, errors.Wrap(err, "error get db name.")
+	}
+
+	stmt, err := p.db.Prepare(`
+SELECT
+  partition_name
+FROM
+  information_schema.PARTITIONS
+WHERE
+  table_name		= ? AND
+  table_schema		= ? AND
+  partition_method	= ?
+ORDER BY
+  partition_name
+`)
+	if err != nil {
+		return nil, errors.Wrap(err, "error prepare.")
+	}
+
+	rows, err := stmt.Query(p.table, dbName, p.partitionType)
+	if err != nil {
+		return nil, errors.Wrap(err, "error select partitions.")
+	}
+
+	partitions := []string{}
+	for rows.Next() {
+		var part string
+		if err := rows.Scan(&part); err != nil {
+			if err != sql.ErrNoRows {
+				return nil, errors.Wrap(err, "error scan partition.")
+			}
+			return partitions, nil
+		}
+		partitions = append(partitions, part)
+	}
+
+	return partitions, nil
 }
 
 func (p *partitioner) IsPartitioned() (bool, error) {
