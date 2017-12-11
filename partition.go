@@ -298,7 +298,7 @@ func (h *handler) Execute() error {
 			prefix = " (dry-run)"
 		}
 
-		fmt.Printf("Following SQL sttement to b executed%s.\n", prefix)
+		fmt.Printf("Following SQL sttement to be executed%s.\n", prefix)
 		fmt.Println(h.statement)
 	}
 
