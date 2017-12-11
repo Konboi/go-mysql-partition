@@ -37,6 +37,8 @@ type Partitioner interface {
 	PrepareAdds(...Partition) (Handler, error)
 	PrepareDrops(...Partition) (Handler, error)
 	PrepareTruncates(...Partition) (Handler, error)
+
+	Dryrun(bool)
 }
 
 // Handler is XXX
@@ -273,6 +275,10 @@ func (p *partitioner) PrepareTruncates(partitions ...Partition) (Handler, error)
 		statement:   stmt,
 		partitioner: p,
 	}, nil
+}
+
+func (p *partitioner) Dryrun(dryrun bool) {
+	p.dryrun = dryrun
 }
 
 type handler struct {

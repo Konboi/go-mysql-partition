@@ -302,3 +302,177 @@ func TestRange(t *testing.T) {
 		}
 	})
 }
+
+func TestDryrun(t *testing.T) {
+	mysqld, err := mysqltest.NewMysqld(nil)
+	if err != nil {
+		t.Fatal("error new mysqld.", err.Error())
+	}
+	defer mysqld.Stop()
+
+	db, err := sql.Open("mysql", mysqld.Datasource("test", "", "", 0))
+	if err != nil {
+		t.Fatal("error open.", err.Error())
+	}
+
+	if _, err := db.Exec(`CREATE TABLE test4 (
+      id BIGINT unsigned NOT NULL auto_increment,
+      event_id INTEGER NOT NULL,
+      PRIMARY KEY (id, event_id)
+    )`); err != nil {
+		t.Fatal("error exec sceham.", err.Error())
+	}
+
+	p := NewListPartitioner(db, "test4", "event_id", PartitionTypeList)
+	p.Dryrun(true)
+
+	result, err := p.IsPartitioned()
+	if err != nil {
+		t.Fatal("error is partitioned.", err.Error())
+	}
+
+	if result {
+		t.Fatal("error invalid result.")
+	}
+
+	parition := Partition{Name: "p1", Description: "1"}
+	if err := p.Creates(parition); err != nil {
+		t.Fatal("error create partition.", err.Error())
+	}
+
+	has, err := p.HasPartition(parition)
+	if err != nil {
+		t.Fatal("error has partition", err.Error())
+	}
+
+	if has {
+		t.Fatal("error invalid result.")
+	}
+}
+
+func TestHandler(t *testing.T) {
+	mysqld, err := mysqltest.NewMysqld(nil)
+	if err != nil {
+		t.Fatal("error new mysqld.", err.Error())
+	}
+	defer mysqld.Stop()
+
+	db, err := sql.Open("mysql", mysqld.Datasource("test", "", "", 0))
+	if err != nil {
+		t.Fatal("error open.", err.Error())
+	}
+
+	if _, err := db.Exec(`CREATE TABLE test5 (
+      id BIGINT unsigned NOT NULL auto_increment,
+      event_id INTEGER NOT NULL,
+      PRIMARY KEY (id, event_id)
+    )`); err != nil {
+		t.Fatal("error exec sceham.", err.Error())
+	}
+
+	p := NewListPartitioner(db, "test5", "event_id", PartitionTypeList)
+
+	t.Run("create", func(t *testing.T) {
+		partition := Partition{Name: "p1", Description: "1"}
+		h, err := p.PrepareCreates(partition)
+		if err != nil {
+			t.Fatal("error prepare creates", err.Error())
+		}
+
+		result, err := p.IsPartitioned()
+		if err != nil {
+			t.Fatal("error is partitioned", err.Error())
+		}
+
+		if result {
+			t.Fatal("error invalid status.")
+		}
+
+		if err := h.Execute(); err != nil {
+			t.Fatal("error execute.", err.Error())
+		}
+
+		result, err = p.IsPartitioned()
+		if err != nil {
+			t.Fatal("error is partitioned", err.Error())
+		}
+
+		if !result {
+			t.Fatal("error invalid status.")
+		}
+	})
+
+	t.Run("add", func(t *testing.T) {
+		partition := Partition{Name: "p2", Description: "2, 3", Comment: "test"}
+		h, err := p.PrepareAdds(partition)
+		if err != nil {
+			t.Fatal("error prepare creates")
+		}
+
+		if err := h.Execute(); err != nil {
+			t.Fatal("error execute.")
+		}
+
+		has, err := p.HasPartition(partition)
+		if err != nil {
+			t.Fatal("error has partition")
+		}
+
+		if !has {
+			t.Fatal("error invalid result")
+		}
+	})
+
+	t.Run("truncate", func(t *testing.T) {
+		if _, err := db.Exec("INSERT INTO `test5` (`event_id`) VALUES (1)"); err != nil {
+			t.Fatal("error insert test data.", err.Error())
+		}
+
+		partition := Partition{Name: "p1"}
+		h, err := p.PrepareTruncates(partition)
+		if err != nil {
+			t.Fatal("error prepare truncates.", err.Error())
+		}
+
+		var count int
+		if err := db.QueryRow("SELECT COUNT(*) FROM `test5` WHERE `event_id` = 1").Scan(&count); err != nil {
+			t.Fatal("error select query.", err.Error())
+		}
+
+		if count != 1 {
+			t.Fatal("error invalid resutl.")
+		}
+
+		if err := h.Execute(); err != nil {
+			t.Fatal("error execute.", err.Error())
+		}
+
+		if err := db.QueryRow("SELECT COUNT(*) FROM `test5` WHERE `event_id` = 1").Scan(&count); err != nil {
+			t.Fatal("error select query.", err.Error())
+		}
+		if count != 0 {
+			t.Fatal("error truncate.")
+		}
+	})
+
+	t.Run("drop", func(t *testing.T) {
+		partition := Partition{Name: "p1"}
+		h, err := p.PrepareDrops(partition)
+		if err != nil {
+			t.Fatal("error prepare drops.", err.Error())
+		}
+
+		if err := h.Execute(); err != nil {
+			t.Fatal("error execute.")
+		}
+
+		has, err := p.HasPartition(partition)
+		if err != nil {
+			t.Fatal("error has partition.")
+		}
+
+		if has {
+			t.Fatal("error invalid result.")
+		}
+	})
+}
