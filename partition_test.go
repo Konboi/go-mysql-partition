@@ -323,8 +323,7 @@ func TestDryrun(t *testing.T) {
 		t.Fatal("error exec sceham.", err.Error())
 	}
 
-	p := NewListPartitioner(db, "test4", "event_id", PartitionTypeList)
-	p.Dryrun(true)
+	p := NewListPartitioner(db, "test4", "event_id", PartitionTypeList, Dryrun(true))
 
 	result, err := p.IsPartitioned()
 	if err != nil {

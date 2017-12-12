@@ -281,6 +281,20 @@ func (p *partitioner) Dryrun(dryrun bool) {
 	p.dryrun = dryrun
 }
 
+type Option func(*partitioner)
+
+func Dryrun(dryrun bool) Option {
+	return func(p *partitioner) {
+		p.dryrun = dryrun
+	}
+}
+
+func Verbose(verbose bool) Option {
+	return func(p *partitioner) {
+		p.verbose = verbose
+	}
+}
+
 type handler struct {
 	statement   string
 	executed    bool

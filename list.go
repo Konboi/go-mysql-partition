@@ -8,14 +8,20 @@ import (
 
 type List struct{}
 
-func NewListPartitioner(db *sql.DB, table, expresstion, partitionType string) Partitioner {
-	return &partitioner{
+func NewListPartitioner(db *sql.DB, table, expresstion, partitionType string, options ...Option) Partitioner {
+	p := &partitioner{
 		table:         table,
 		db:            db,
 		expression:    expresstion,
 		partitionType: strings.ToUpper(partitionType),
 		partBuilder:   &List{},
 	}
+
+	for _, option := range options {
+		option(p)
+	}
+
+	return p
 }
 
 func (l *List) buildPart(p Partition) (string, error) {
