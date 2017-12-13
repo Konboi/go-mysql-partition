@@ -6,8 +6,10 @@ import (
 	"strings"
 )
 
+// List is list partition part builer
 type List struct{}
 
+// NewListPartitioner is XXX
 func NewListPartitioner(db *sql.DB, table, expresstion string, options ...Option) Partitioner {
 	p := &partitioner{
 		table:         table,

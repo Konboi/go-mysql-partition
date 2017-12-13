@@ -14,7 +14,7 @@ func TestRangePartitioner(t *testing.T) {
 		Do     func(...Partition) (Handler, error)
 	}
 
-	r := NewRangePartitioner(nil, "test2", "created_at", PartitionType("range columns"))
+	r := NewRangePartitioner(nil, "test2", "created_at", Type("range columns"))
 	tests := []Test{
 		Test{
 			Title: "create partition",

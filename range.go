@@ -7,6 +7,7 @@ import (
 	"strings"
 )
 
+// Range is range partition part builder
 type Range struct {
 	table                 string
 	catchAllPartitionName string
@@ -22,6 +23,7 @@ func init() {
 	bracketRegexp = regexp.MustCompile(`\(`)
 }
 
+// NewRangePartitioner is XXX
 func NewRangePartitioner(db *sql.DB, table, expresstion string, options ...Option) Partitioner {
 	p := &partitioner{
 		table:         table,

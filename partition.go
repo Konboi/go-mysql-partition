@@ -5,25 +5,27 @@ import (
 	"fmt"
 	"strings"
 
-	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/go-sql-driver/mysql" // for connect mysql
 	"github.com/pkg/errors"
 )
 
 const (
-	PartitionTypeList  = "LIST"
+	// PartitionTypeList is default name for list partition
+	PartitionTypeList = "LIST"
+	// PartitionTypeRange is default name for range partition
 	PartitionTypeRange = "RANGE"
-
+	// CatchAllPartitionValue is max value for range partition
 	CatchAllPartitionValue = "MAXVALUE"
 )
 
-// Partition is XXX
+// Partition describe partition setting
 type Partition struct {
 	Name        string
 	Description string
 	Comment     string
 }
 
-// Partitioner is XXX
+// Partitioner wrapper for handler
 type Partitioner interface {
 	IsPartitioned() (bool, error)
 	HasPartition(Partition) (bool, error)
@@ -41,7 +43,7 @@ type Partitioner interface {
 	Dryrun(bool)
 }
 
-// Handler is XXX
+// Handler exec queries
 type Handler interface {
 	Execute() error
 	Statement() string
@@ -281,26 +283,33 @@ func (p *partitioner) Dryrun(dryrun bool) {
 	p.dryrun = dryrun
 }
 
+// Option use new partitoner
 type Option func(*partitioner)
 
+// Dryrun default false
 func Dryrun(dryrun bool) Option {
 	return func(p *partitioner) {
 		p.dryrun = dryrun
 	}
 }
 
+// Verbose print exec query. default false
 func Verbose(verbose bool) Option {
 	return func(p *partitioner) {
 		p.verbose = verbose
 	}
 }
 
-func PartitionType(t string) Option {
+// Type set partition type.
+// list partiton default LIST.
+// range partition default RANGE.
+func Type(t string) Option {
 	return func(p *partitioner) {
 		p.partitionType = strings.ToUpper(t)
 	}
 }
 
+// CatchAllPartitionName set catch all partition name for range partition
 func CatchAllPartitionName(name string) Option {
 	return func(p *partitioner) {
 		if r, ok := p.partBuilder.(*Range); ok {

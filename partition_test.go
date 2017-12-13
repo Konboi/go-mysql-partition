@@ -168,7 +168,7 @@ func TestRange(t *testing.T) {
 		t.Fatal("error exec sceham.", err.Error())
 	}
 
-	p := NewRangePartitioner(db, "test2", "created_at", PartitionType("range columns"))
+	p := NewRangePartitioner(db, "test2", "created_at", Type("range columns"))
 
 	result, err := p.IsPartitioned()
 	if err != nil {
