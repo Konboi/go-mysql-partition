@@ -295,6 +295,12 @@ func Verbose(verbose bool) Option {
 	}
 }
 
+func PartitionType(t string) Option {
+	return func(p *partitioner) {
+		p.partitionType = strings.ToUpper(t)
+	}
+}
+
 type handler struct {
 	statement   string
 	executed    bool

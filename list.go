@@ -8,12 +8,12 @@ import (
 
 type List struct{}
 
-func NewListPartitioner(db *sql.DB, table, expresstion, partitionType string, options ...Option) Partitioner {
+func NewListPartitioner(db *sql.DB, table, expresstion string, options ...Option) Partitioner {
 	p := &partitioner{
 		table:         table,
 		db:            db,
 		expression:    expresstion,
-		partitionType: strings.ToUpper(partitionType),
+		partitionType: PartitionTypeList,
 		partBuilder:   &List{},
 	}
 

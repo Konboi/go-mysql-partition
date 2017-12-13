@@ -7,7 +7,7 @@ import (
 )
 
 func TestListPartitioner(t *testing.T) {
-	list := NewListPartitioner(nil, "test", "event_id", PartitionTypeList)
+	list := NewListPartitioner(nil, "test", "event_id")
 
 	type Test struct {
 		Title  string

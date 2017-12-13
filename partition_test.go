@@ -2,7 +2,6 @@ package partition
 
 import (
 	"database/sql"
-	"fmt"
 	"testing"
 
 	"github.com/lestrrat/go-test-mysqld"
@@ -28,7 +27,7 @@ func TestList(t *testing.T) {
 		t.Fatal("error exec sceham.", err.Error())
 	}
 
-	p := NewListPartitioner(db, "test", "event_id", PartitionTypeList)
+	p := NewListPartitioner(db, "test", "event_id")
 
 	partitioned, err := p.IsPartitioned()
 	if err != nil {
@@ -169,7 +168,7 @@ func TestRange(t *testing.T) {
 		t.Fatal("error exec sceham.", err.Error())
 	}
 
-	p := NewRangePartitioner(db, "test2", "created_at", fmt.Sprint("range columns"), "")
+	p := NewRangePartitioner(db, "test2", "created_at", "", PartitionType("range columns"))
 
 	result, err := p.IsPartitioned()
 	if err != nil {
@@ -323,7 +322,7 @@ func TestDryrun(t *testing.T) {
 		t.Fatal("error exec sceham.", err.Error())
 	}
 
-	p := NewListPartitioner(db, "test4", "event_id", PartitionTypeList, Dryrun(true))
+	p := NewListPartitioner(db, "test4", "event_id", Dryrun(true))
 
 	result, err := p.IsPartitioned()
 	if err != nil {
@@ -369,7 +368,7 @@ func TestHandler(t *testing.T) {
 		t.Fatal("error exec sceham.", err.Error())
 	}
 
-	p := NewListPartitioner(db, "test5", "event_id", PartitionTypeList)
+	p := NewListPartitioner(db, "test5", "event_id")
 
 	t.Run("create", func(t *testing.T) {
 		partition := Partition{Name: "p1", Description: "1"}
