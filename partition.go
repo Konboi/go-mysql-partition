@@ -46,6 +46,7 @@ type Partitioner interface {
 	PrepareTruncates(...*Partition) (Handler, error)
 
 	Dryrun(bool)
+	Verbose(bool)
 }
 
 // Handler exec queries
@@ -286,6 +287,10 @@ func (p *partitioner) PrepareTruncates(partitions ...*Partition) (Handler, error
 
 func (p *partitioner) Dryrun(dryrun bool) {
 	p.dryrun = dryrun
+}
+
+func (p *partitioner) Verbose(verbose bool) {
+	p.verbose = verbose
 }
 
 // Option use new partitoner
