@@ -28,17 +28,17 @@ type Partition struct {
 // Partitioner wrapper for handler
 type Partitioner interface {
 	IsPartitioned() (bool, error)
-	HasPartition(Partition) (bool, error)
+	HasPartition(*Partition) (bool, error)
 
-	Creates(...Partition) error
-	Adds(...Partition) error
-	Drops(...Partition) error
-	Truncates(...Partition) error
+	Creates(...*Partition) error
+	Adds(...*Partition) error
+	Drops(...*Partition) error
+	Truncates(...*Partition) error
 
-	PrepareCreates(...Partition) (Handler, error)
-	PrepareAdds(...Partition) (Handler, error)
-	PrepareDrops(...Partition) (Handler, error)
-	PrepareTruncates(...Partition) (Handler, error)
+	PrepareCreates(...*Partition) (Handler, error)
+	PrepareAdds(...*Partition) (Handler, error)
+	PrepareDrops(...*Partition) (Handler, error)
+	PrepareTruncates(...*Partition) (Handler, error)
 
 	Dryrun(bool)
 }
@@ -50,7 +50,7 @@ type Handler interface {
 }
 
 type partBuilder interface {
-	buildPart(Partition) (string, error)
+	buildPart(*Partition) (string, error)
 }
 
 type partitioner struct {
@@ -135,7 +135,7 @@ func (p *partitioner) IsPartitioned() (bool, error) {
 	return false, nil
 }
 
-func (p *partitioner) HasPartition(partition Partition) (bool, error) {
+func (p *partitioner) HasPartition(partition *Partition) (bool, error) {
 	parts, err := p.retrievePartitions()
 	if err != nil {
 		return false, errors.Wrap(err, "error retrieveParitions")
@@ -150,7 +150,7 @@ func (p *partitioner) HasPartition(partition Partition) (bool, error) {
 	return false, nil
 }
 
-func (p *partitioner) buildParts(partitions ...Partition) (string, error) {
+func (p *partitioner) buildParts(partitions ...*Partition) (string, error) {
 	parts := []string{}
 	for _, partition := range partitions {
 		part, err := p.partBuilder.buildPart(partition)
@@ -163,9 +163,9 @@ func (p *partitioner) buildParts(partitions ...Partition) (string, error) {
 	return strings.Join(parts, ", "), nil
 }
 
-func (p *partitioner) buildCreatesSQL(partitions ...Partition) (string, error) {
+func (p *partitioner) buildCreatesSQL(partitions ...*Partition) (string, error) {
 	if r, ok := p.partBuilder.(*Range); ok && r.catchAllPartitionName != "" {
-		partitions = append(partitions, Partition{Name: r.catchAllPartitionName, Description: CatchAllPartitionValue})
+		partitions = append(partitions, &Partition{Name: r.catchAllPartitionName, Description: CatchAllPartitionValue})
 	}
 
 	parts, err := p.buildParts(partitions...)
@@ -176,7 +176,7 @@ func (p *partitioner) buildCreatesSQL(partitions ...Partition) (string, error) {
 	return fmt.Sprintf("ALTER TABLE %s PARTITION BY %s (%s) (%s)", p.table, p.partitionType, p.expression, parts), nil
 }
 
-func (p *partitioner) buildAddsSQL(partitions ...Partition) (string, error) {
+func (p *partitioner) buildAddsSQL(partitions ...*Partition) (string, error) {
 	parts, err := p.buildParts(partitions...)
 	if err != nil {
 		return "", errors.Wrap(err, "error buildParts")
@@ -185,7 +185,7 @@ func (p *partitioner) buildAddsSQL(partitions ...Partition) (string, error) {
 	return fmt.Sprintf("ALTER TABLE %s ADD PARTITION (%s)", p.table, parts), nil
 }
 
-func (p *partitioner) buildDropsSQL(partitions ...Partition) (string, error) {
+func (p *partitioner) buildDropsSQL(partitions ...*Partition) (string, error) {
 	names := []string{}
 	for _, partition := range partitions {
 		names = append(names, partition.Name)
@@ -194,7 +194,7 @@ func (p *partitioner) buildDropsSQL(partitions ...Partition) (string, error) {
 	return fmt.Sprintf("ALTER TABLE %s DROP PARTITION %s", p.table, strings.Join(names, ",")), nil
 }
 
-func (p *partitioner) buildTruncatesSQL(partitions ...Partition) (string, error) {
+func (p *partitioner) buildTruncatesSQL(partitions ...*Partition) (string, error) {
 	names := []string{}
 	for _, partition := range partitions {
 		names = append(names, partition.Name)
@@ -203,7 +203,7 @@ func (p *partitioner) buildTruncatesSQL(partitions ...Partition) (string, error)
 	return fmt.Sprintf("ALTER TABLE %s TRUNCATE PARTITION %s", p.table, strings.Join(names, ",")), nil
 }
 
-func (p *partitioner) Creates(partitions ...Partition) error {
+func (p *partitioner) Creates(partitions ...*Partition) error {
 	h, err := p.PrepareCreates(partitions...)
 	if err != nil {
 		return errors.Wrap(err, "error PrepareCreates")
@@ -211,7 +211,7 @@ func (p *partitioner) Creates(partitions ...Partition) error {
 	return h.Execute()
 }
 
-func (p *partitioner) Adds(partitions ...Partition) error {
+func (p *partitioner) Adds(partitions ...*Partition) error {
 	h, err := p.PrepareAdds(partitions...)
 	if err != nil {
 		return errors.Wrap(err, "error PrepareAdds")
@@ -219,7 +219,7 @@ func (p *partitioner) Adds(partitions ...Partition) error {
 	return h.Execute()
 }
 
-func (p *partitioner) Drops(partitions ...Partition) error {
+func (p *partitioner) Drops(partitions ...*Partition) error {
 	h, err := p.PrepareDrops(partitions...)
 	if err != nil {
 		return errors.Wrap(err, "error PrepareDrops")
@@ -227,7 +227,7 @@ func (p *partitioner) Drops(partitions ...Partition) error {
 	return h.Execute()
 }
 
-func (p *partitioner) Truncates(partitions ...Partition) error {
+func (p *partitioner) Truncates(partitions ...*Partition) error {
 	h, err := p.PrepareTruncates(partitions...)
 	if err != nil {
 		return errors.Wrap(err, "error PrepareAdds")
@@ -235,7 +235,7 @@ func (p *partitioner) Truncates(partitions ...Partition) error {
 	return h.Execute()
 }
 
-func (p *partitioner) PrepareCreates(partitions ...Partition) (Handler, error) {
+func (p *partitioner) PrepareCreates(partitions ...*Partition) (Handler, error) {
 	stmt, err := p.buildCreatesSQL(partitions...)
 	if err != nil {
 		return nil, errors.Wrap(err, "error buildCreateSQL")
@@ -246,7 +246,7 @@ func (p *partitioner) PrepareCreates(partitions ...Partition) (Handler, error) {
 	}, nil
 }
 
-func (p *partitioner) PrepareAdds(partitions ...Partition) (Handler, error) {
+func (p *partitioner) PrepareAdds(partitions ...*Partition) (Handler, error) {
 	stmt, err := p.buildAddsSQL(partitions...)
 	if err != nil {
 		return nil, errors.Wrap(err, "error buildAddsSQL")
@@ -257,7 +257,7 @@ func (p *partitioner) PrepareAdds(partitions ...Partition) (Handler, error) {
 	}, nil
 }
 
-func (p *partitioner) PrepareDrops(partitions ...Partition) (Handler, error) {
+func (p *partitioner) PrepareDrops(partitions ...*Partition) (Handler, error) {
 	stmt, err := p.buildDropsSQL(partitions...)
 	if err != nil {
 		return nil, errors.Wrap(err, "error buildDropsSQL")
@@ -268,7 +268,7 @@ func (p *partitioner) PrepareDrops(partitions ...Partition) (Handler, error) {
 	}, nil
 }
 
-func (p *partitioner) PrepareTruncates(partitions ...Partition) (Handler, error) {
+func (p *partitioner) PrepareTruncates(partitions ...*Partition) (Handler, error) {
 	stmt, err := p.buildTruncatesSQL(partitions...)
 	if err != nil {
 		return nil, errors.Wrap(err, "error buildTruncatesSQL")

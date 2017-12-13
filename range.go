@@ -42,7 +42,7 @@ func NewRangePartitioner(db *sql.DB, table, expresstion string, options ...Optio
 	return p
 }
 
-func (r *Range) buildPart(p Partition) (string, error) {
+func (r *Range) buildPart(p *Partition) (string, error) {
 	if p.Description == "" {
 		return "", fmt.Errorf("error no partition description is spcified")
 	}
@@ -64,7 +64,7 @@ func (r *Range) buildCatchAllPart() (string, error) {
 		return "", fmt.Errorf("catch_all_partition_name isn't specified")
 	}
 
-	part, err := r.buildPart(Partition{Name: r.catchAllPartitionName, Description: "MAXVALUE"})
+	part, err := r.buildPart(&Partition{Name: r.catchAllPartitionName, Description: "MAXVALUE"})
 	if err != nil {
 		return "", err
 	}

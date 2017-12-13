@@ -9,38 +9,38 @@ import (
 func TestRangePartitioner(t *testing.T) {
 	type Test struct {
 		Title  string
-		Input  []Partition
+		Input  []*Partition
 		Output string
-		Do     func(...Partition) (Handler, error)
+		Do     func(...*Partition) (Handler, error)
 	}
 
 	r := NewRangePartitioner(nil, "test2", "created_at", Type("range columns"))
 	tests := []Test{
 		Test{
 			Title: "create partition",
-			Input: []Partition{Partition{
+			Input: []*Partition{&Partition{
 				Name:        "p20100101",
 				Description: "2010-01-01",
 			}},
 			Output: "ALTER TABLE test2 PARTITION BY RANGE COLUMNS (created_at) (PARTITION p20100101 VALUES LESS THAN ('2010-01-01'))",
-			Do: func(partitions ...Partition) (Handler, error) {
+			Do: func(partitions ...*Partition) (Handler, error) {
 				return r.PrepareCreates(partitions...)
 			},
 		},
 		Test{
 			Title: "add partition",
-			Input: []Partition{
-				Partition{
+			Input: []*Partition{
+				&Partition{
 					Name:        "p20110101",
 					Description: "2011-01-01",
 				},
-				Partition{
+				&Partition{
 					Name:        "p20120101",
 					Description: "2012-01-01",
 				},
 			},
 			Output: "ALTER TABLE test2 ADD PARTITION (PARTITION p20110101 VALUES LESS THAN ('2011-01-01'), PARTITION p20120101 VALUES LESS THAN ('2012-01-01'))",
-			Do: func(partitions ...Partition) (Handler, error) {
+			Do: func(partitions ...*Partition) (Handler, error) {
 				return r.PrepareAdds(partitions...)
 			},
 		},
@@ -60,7 +60,7 @@ func TestRangePartitioner(t *testing.T) {
 	}
 
 	t.Run("catch all", func(t *testing.T) {
-		p := Partition{
+		p := &Partition{
 			Name:        "p20100101",
 			Description: "TO_DAYS('2010-01-01')",
 		}
@@ -80,7 +80,7 @@ func TestRangePartitioner(t *testing.T) {
 func Test_range_buildPart(t *testing.T) {
 	r := &Range{}
 
-	p := Partition{
+	p := &Partition{
 		Name:        "p111",
 		Comment:     "test111",
 		Description: "111",

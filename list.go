@@ -26,7 +26,7 @@ func NewListPartitioner(db *sql.DB, table, expresstion string, options ...Option
 	return p
 }
 
-func (l *List) buildPart(p Partition) (string, error) {
+func (l *List) buildPart(p *Partition) (string, error) {
 	if p.Description == "" {
 		return "", fmt.Errorf("error no partition description is spcified")
 	}

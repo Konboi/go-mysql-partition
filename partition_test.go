@@ -38,7 +38,7 @@ func TestList(t *testing.T) {
 		t.Fatal("error is partition result.")
 	}
 
-	partition := Partition{Name: "p1", Description: "1"}
+	partition := &Partition{Name: "p1", Description: "1"}
 	if err := p.Creates(partition); err != nil {
 		t.Fatal("error create partition.", err.Error())
 	}
@@ -62,7 +62,7 @@ func TestList(t *testing.T) {
 	}
 
 	t.Run("add partitions", func(t *testing.T) {
-		partition := Partition{
+		partition := &Partition{
 			Name:        "p2",
 			Description: "2, 3",
 		}
@@ -102,7 +102,7 @@ func TestList(t *testing.T) {
 			t.Fatal("error invalid test data.")
 		}
 
-		partition := Partition{Name: "p1"}
+		partition := &Partition{Name: "p1"}
 		if err := p.Truncates(partition); err != nil {
 			t.Fatal("error truncate partition.", err.Error())
 		}
@@ -132,7 +132,7 @@ func TestList(t *testing.T) {
 	})
 
 	t.Run("drop parition", func(t *testing.T) {
-		partition := Partition{Name: "p1"}
+		partition := &Partition{Name: "p1"}
 		if err := p.Drops(partition); err != nil {
 			t.Fatal("error drop partition.", err.Error())
 		}
@@ -179,7 +179,7 @@ func TestRange(t *testing.T) {
 		t.Fatal("error already partitioned.")
 	}
 
-	partition := Partition{Name: "p20100101", Description: "2010-01-01"}
+	partition := &Partition{Name: "p20100101", Description: "2010-01-01"}
 	if err := p.Creates(partition); err != nil {
 		t.Fatal("error creates.", err.Error())
 	}
@@ -203,8 +203,8 @@ func TestRange(t *testing.T) {
 	}
 
 	t.Run("add partitions", func(t *testing.T) {
-		partition1 := Partition{Name: "p20110101", Description: "2011-01-01"}
-		partition2 := Partition{Name: "p20120101", Description: "2012-01-01"}
+		partition1 := &Partition{Name: "p20110101", Description: "2011-01-01"}
+		partition2 := &Partition{Name: "p20120101", Description: "2012-01-01"}
 
 		if err := p.Adds(partition1, partition2); err != nil {
 			t.Fatal("error adds.", err.Error())
@@ -255,7 +255,7 @@ func TestRange(t *testing.T) {
 			t.Fatalf("error invalid result. got:%d want:%d.", count2, 2)
 		}
 
-		partition := Partition{Name: "p20110101"}
+		partition := &Partition{Name: "p20110101"}
 		if err := p.Truncates(partition); err != nil {
 			t.Fatal("error truncates.", err.Error())
 		}
@@ -286,7 +286,7 @@ func TestRange(t *testing.T) {
 	})
 
 	t.Run("drop partition", func(t *testing.T) {
-		partition := Partition{Name: "p20110101"}
+		partition := &Partition{Name: "p20110101"}
 		if err := p.Drops(partition); err != nil {
 			t.Fatal("error drops.", err.Error())
 		}
@@ -333,7 +333,7 @@ func TestDryrun(t *testing.T) {
 		t.Fatal("error invalid result.")
 	}
 
-	parition := Partition{Name: "p1", Description: "1"}
+	parition := &Partition{Name: "p1", Description: "1"}
 	if err := p.Creates(parition); err != nil {
 		t.Fatal("error create partition.", err.Error())
 	}
@@ -371,7 +371,7 @@ func TestHandler(t *testing.T) {
 	p := NewListPartitioner(db, "test5", "event_id")
 
 	t.Run("create", func(t *testing.T) {
-		partition := Partition{Name: "p1", Description: "1"}
+		partition := &Partition{Name: "p1", Description: "1"}
 		h, err := p.PrepareCreates(partition)
 		if err != nil {
 			t.Fatal("error prepare creates", err.Error())
@@ -401,7 +401,7 @@ func TestHandler(t *testing.T) {
 	})
 
 	t.Run("add", func(t *testing.T) {
-		partition := Partition{Name: "p2", Description: "2, 3", Comment: "test"}
+		partition := &Partition{Name: "p2", Description: "2, 3", Comment: "test"}
 		h, err := p.PrepareAdds(partition)
 		if err != nil {
 			t.Fatal("error prepare creates")
@@ -426,7 +426,7 @@ func TestHandler(t *testing.T) {
 			t.Fatal("error insert test data.", err.Error())
 		}
 
-		partition := Partition{Name: "p1"}
+		partition := &Partition{Name: "p1"}
 		h, err := p.PrepareTruncates(partition)
 		if err != nil {
 			t.Fatal("error prepare truncates.", err.Error())
@@ -454,7 +454,7 @@ func TestHandler(t *testing.T) {
 	})
 
 	t.Run("drop", func(t *testing.T) {
-		partition := Partition{Name: "p1"}
+		partition := &Partition{Name: "p1"}
 		h, err := p.PrepareDrops(partition)
 		if err != nil {
 			t.Fatal("error prepare drops.", err.Error())
