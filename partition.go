@@ -72,7 +72,7 @@ func (p *partitioner) dbName() (string, error) {
 	}
 
 	if err := p.db.QueryRow("SELECT DATABASE()").Scan(&p._dbName); err != nil {
-		return "", errors.Wrap(err, "error select database name.")
+		return "", errors.Wrap(err, "error scan database name")
 	}
 
 	return p._dbName, nil
@@ -81,7 +81,7 @@ func (p *partitioner) dbName() (string, error) {
 func (p *partitioner) retrievePartitions() ([]string, error) {
 	dbName, err := p.dbName()
 	if err != nil {
-		return nil, errors.Wrap(err, "error get db name.")
+		return nil, errors.Wrap(err, "error dbName")
 	}
 
 	stmt, err := p.db.Prepare(`
@@ -97,12 +97,12 @@ ORDER BY
   partition_name
 `)
 	if err != nil {
-		return nil, errors.Wrap(err, "error prepare.")
+		return nil, errors.Wrap(err, "error prepare query")
 	}
 
 	rows, err := stmt.Query(p.table, dbName, p.partitionType)
 	if err != nil {
-		return nil, errors.Wrap(err, "error select partitions.")
+		return nil, errors.Wrap(err, "error select partitions")
 	}
 
 	partitions := []string{}
@@ -110,7 +110,7 @@ ORDER BY
 		var part string
 		if err := rows.Scan(&part); err != nil {
 			if err != sql.ErrNoRows {
-				return nil, errors.Wrap(err, "error scan partition.")
+				return nil, errors.Wrap(err, "error scan partition")
 			}
 			return partitions, nil
 		}
@@ -123,7 +123,7 @@ ORDER BY
 func (p *partitioner) IsPartitioned() (bool, error) {
 	parts, err := p.retrievePartitions()
 	if err != nil {
-		return false, errors.Wrap(err, "error retrieve partitons")
+		return false, errors.Wrap(err, "error retrievePartitons")
 	}
 
 	if 0 < len(parts) {
@@ -136,7 +136,7 @@ func (p *partitioner) IsPartitioned() (bool, error) {
 func (p *partitioner) HasPartition(partition Partition) (bool, error) {
 	parts, err := p.retrievePartitions()
 	if err != nil {
-		return false, errors.Wrap(err, "error retrieve paritions")
+		return false, errors.Wrap(err, "error retrieveParitions")
 	}
 
 	for _, part := range parts {
@@ -153,7 +153,7 @@ func (p *partitioner) buildParts(partitions ...Partition) (string, error) {
 	for _, partition := range partitions {
 		part, err := p.partBuilder.buildPart(partition)
 		if err != nil {
-			return "", errors.Wrapf(err, "error build part. name:%s descriptions:%s", partition.Name, partition.Description)
+			return "", errors.Wrapf(err, "error buildPart. name:%s descriptions:%s", partition.Name, partition.Description)
 		}
 		parts = append(parts, part)
 	}
@@ -168,7 +168,7 @@ func (p *partitioner) buildCreatesSQL(partitions ...Partition) (string, error) {
 
 	parts, err := p.buildParts(partitions...)
 	if err != nil {
-		return "", errors.Wrap(err, "error build parts")
+		return "", errors.Wrap(err, "error buildParts")
 	}
 
 	return fmt.Sprintf("ALTER TABLE %s PARTITION BY %s (%s) (%s)", p.table, p.partitionType, p.expression, parts), nil
@@ -177,7 +177,7 @@ func (p *partitioner) buildCreatesSQL(partitions ...Partition) (string, error) {
 func (p *partitioner) buildAddsSQL(partitions ...Partition) (string, error) {
 	parts, err := p.buildParts(partitions...)
 	if err != nil {
-		return "", errors.Wrap(err, "error build parts")
+		return "", errors.Wrap(err, "error buildParts")
 	}
 
 	return fmt.Sprintf("ALTER TABLE %s ADD PARTITION (%s)", p.table, parts), nil
@@ -204,7 +204,7 @@ func (p *partitioner) buildTruncatesSQL(partitions ...Partition) (string, error)
 func (p *partitioner) Creates(partitions ...Partition) error {
 	h, err := p.PrepareCreates(partitions...)
 	if err != nil {
-		return errors.Wrap(err, "error prepare adds")
+		return errors.Wrap(err, "error PrepareCreates")
 	}
 	return h.Execute()
 }
@@ -212,7 +212,7 @@ func (p *partitioner) Creates(partitions ...Partition) error {
 func (p *partitioner) Adds(partitions ...Partition) error {
 	h, err := p.PrepareAdds(partitions...)
 	if err != nil {
-		return errors.Wrap(err, "error prepare adds")
+		return errors.Wrap(err, "error PrepareAdds")
 	}
 	return h.Execute()
 }
@@ -220,7 +220,7 @@ func (p *partitioner) Adds(partitions ...Partition) error {
 func (p *partitioner) Drops(partitions ...Partition) error {
 	h, err := p.PrepareDrops(partitions...)
 	if err != nil {
-		return errors.Wrap(err, "error prepare adds")
+		return errors.Wrap(err, "error PrepareDrops")
 	}
 	return h.Execute()
 }
@@ -228,7 +228,7 @@ func (p *partitioner) Drops(partitions ...Partition) error {
 func (p *partitioner) Truncates(partitions ...Partition) error {
 	h, err := p.PrepareTruncates(partitions...)
 	if err != nil {
-		return errors.Wrap(err, "error prepare adds")
+		return errors.Wrap(err, "error PrepareAdds")
 	}
 	return h.Execute()
 }
@@ -236,7 +236,7 @@ func (p *partitioner) Truncates(partitions ...Partition) error {
 func (p *partitioner) PrepareCreates(partitions ...Partition) (Handler, error) {
 	stmt, err := p.buildCreatesSQL(partitions...)
 	if err != nil {
-		return nil, errors.Wrap(err, "error build sql")
+		return nil, errors.Wrap(err, "error buildCreateSQL")
 	}
 	return &handler{
 		statement:   stmt,
@@ -247,7 +247,7 @@ func (p *partitioner) PrepareCreates(partitions ...Partition) (Handler, error) {
 func (p *partitioner) PrepareAdds(partitions ...Partition) (Handler, error) {
 	stmt, err := p.buildAddsSQL(partitions...)
 	if err != nil {
-		return nil, errors.Wrap(err, "error build sql")
+		return nil, errors.Wrap(err, "error buildAddsSQL")
 	}
 	return &handler{
 		statement:   stmt,
@@ -258,7 +258,7 @@ func (p *partitioner) PrepareAdds(partitions ...Partition) (Handler, error) {
 func (p *partitioner) PrepareDrops(partitions ...Partition) (Handler, error) {
 	stmt, err := p.buildDropsSQL(partitions...)
 	if err != nil {
-		return nil, errors.Wrap(err, "error build sql")
+		return nil, errors.Wrap(err, "error buildDropsSQL")
 	}
 	return &handler{
 		statement:   stmt,
@@ -269,7 +269,7 @@ func (p *partitioner) PrepareDrops(partitions ...Partition) (Handler, error) {
 func (p *partitioner) PrepareTruncates(partitions ...Partition) (Handler, error) {
 	stmt, err := p.buildTruncatesSQL(partitions...)
 	if err != nil {
-		return nil, errors.Wrap(err, "error build sql")
+		return nil, errors.Wrap(err, "error buildTruncatesSQL")
 	}
 	return &handler{
 		statement:   stmt,
