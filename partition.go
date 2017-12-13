@@ -301,6 +301,14 @@ func PartitionType(t string) Option {
 	}
 }
 
+func CatchAllPartitionName(name string) Option {
+	return func(p *partitioner) {
+		if r, ok := p.partBuilder.(*Range); ok {
+			r.catchAllPartitionName = name
+		}
+	}
+}
+
 type handler struct {
 	statement   string
 	executed    bool
