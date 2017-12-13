@@ -25,6 +25,11 @@ type Partition struct {
 	Comment     string
 }
 
+// NewPartition is XXX
+func NewPartition(name, description, comment string) *Partition {
+	return &Partition{name, description, comment}
+}
+
 // Partitioner wrapper for handler
 type Partitioner interface {
 	IsPartitioned() (bool, error)

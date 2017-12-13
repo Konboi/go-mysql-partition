@@ -17,11 +17,8 @@ func TestRangePartitioner(t *testing.T) {
 	r := NewRangePartitioner(nil, "test2", "created_at", Type("range columns"))
 	tests := []Test{
 		Test{
-			Title: "create partition",
-			Input: []*Partition{&Partition{
-				Name:        "p20100101",
-				Description: "2010-01-01",
-			}},
+			Title:  "create partition",
+			Input:  []*Partition{NewPartition("p20100101", "2010-01-01", "")},
 			Output: "ALTER TABLE test2 PARTITION BY RANGE COLUMNS (created_at) (PARTITION p20100101 VALUES LESS THAN ('2010-01-01'))",
 			Do: func(partitions ...*Partition) (Handler, error) {
 				return r.PrepareCreates(partitions...)
@@ -30,14 +27,8 @@ func TestRangePartitioner(t *testing.T) {
 		Test{
 			Title: "add partition",
 			Input: []*Partition{
-				&Partition{
-					Name:        "p20110101",
-					Description: "2011-01-01",
-				},
-				&Partition{
-					Name:        "p20120101",
-					Description: "2012-01-01",
-				},
+				NewPartition("p20110101", "2011-01-01", ""),
+				NewPartition("p20120101", "2012-01-01", ""),
 			},
 			Output: "ALTER TABLE test2 ADD PARTITION (PARTITION p20110101 VALUES LESS THAN ('2011-01-01'), PARTITION p20120101 VALUES LESS THAN ('2012-01-01'))",
 			Do: func(partitions ...*Partition) (Handler, error) {
@@ -60,10 +51,7 @@ func TestRangePartitioner(t *testing.T) {
 	}
 
 	t.Run("catch all", func(t *testing.T) {
-		p := &Partition{
-			Name:        "p20100101",
-			Description: "TO_DAYS('2010-01-01')",
-		}
+		p := NewPartition("p20100101", "TO_DAYS('2010-01-01')", "")
 		expect := "ALTER TABLE test3 PARTITION BY RANGE (TO_DAYS(created_at)) (PARTITION p20100101 VALUES LESS THAN (TO_DAYS('2010-01-01')), PARTITION pmax VALUES LESS THAN (MAXVALUE))"
 		r := NewRangePartitioner(nil, "test3", "TO_DAYS(created_at)", CatchAllPartitionName("pmax"))
 		h, err := r.PrepareCreates(p)
@@ -80,11 +68,7 @@ func TestRangePartitioner(t *testing.T) {
 func Test_range_buildPart(t *testing.T) {
 	r := &Range{}
 
-	p := &Partition{
-		Name:        "p111",
-		Comment:     "test111",
-		Description: "111",
-	}
+	p := NewPartition("p111", "111", "test111")
 	expect := "PARTITION p111 VALUES LESS THAN (111) COMMENT = 'test111'"
 
 	result, err := r.buildPart(p)
