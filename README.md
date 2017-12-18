@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/Konboi/go-mysql-partition.svg?branch=master)](https://travis-ci.org/Konboi/go-mysql-partition)
+
 # go-mysql-partition
 
 Utility for MySQL partitioning. inspired by [p5-MySQL-Partition](https://github.com/Songmu/p5-MySQL-Partition)
