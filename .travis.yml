@@ -1,0 +1,10 @@
+language: go
+sudo: true
+go:
+  - 1.8.x
+  - 1.9.x
+  - tip
+before_script:
+  - sudo cp /etc/mysql/my.cnf /usr/my-default.cnf
+script:
+  - go test -v -short ./...
