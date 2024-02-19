@@ -1,4 +1,4 @@
-module github.com/Konboi/go-mysql-partition
+module github.com/astj/go-mysql-partition
 
 go 1.21.6
 
